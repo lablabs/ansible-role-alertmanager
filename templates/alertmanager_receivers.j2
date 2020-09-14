@@ -1,0 +1,40 @@
+#jinja2:lstrip_blocks: True,trim_blocks: False
+
+{% macro slack_receiver(channel_name, api_url ) %}
+      - channel: '#{{ channel_name }}'
+        api_url: {{ api_url }}
+        send_resolved: true
+        username: {% raw %}'{{ template "slack.username" . }}'{% endraw %}
+        icon_url: 'https://avatars3.githubusercontent.com/u/3380462'
+        color: {% raw %}'{{ template "slack.color" . }}'{% endraw %}
+        title: {% raw %}'{{ template "slack.title" . }}'{% endraw %}
+        title_link: {% raw %}'{{ template "slack.title_link" . }}'{% endraw %}
+        pretext: {% raw %}'{{ template "slack.pretext" . }}'{% endraw %}
+        text: {% raw %}'{{ template "slack.text" . }}'{% endraw %}
+        short_fields: false
+{% endmacro %}
+
+{% macro victorops_receiver(routing_key, api_key ) %}
+      - api_key: {{ api_key }}
+        routing_key: '{{ routing_key }}'
+        send_resolved: false
+        entity_display_name: {% raw %}'{{ range .Alerts.Firing }}{{ .Labels.alertname }} on {{ .Annotations.identifier }} {{ end }}'{% endraw %}
+        state_message: {% raw %}'{{ range .Alerts.Firing }}{{ .Annotations.msg }}{{ end }}'{% endraw %}
+{% endmacro %}
+
+{% for receiver in alert_manager_receivers %}
+  - name: {{ receiver['name'] }}
+  {% if receiver['slack_configs'] is defined %}
+    slack_configs:
+    {% for slack in receiver['slack_configs'] %}
+    {{ slack_receiver(slack['channel'], slack['api_url']) }}
+    {% endfor %}
+    {% endif %}
+    {% if receiver['victorops_configs'] is defined %}
+    victorops_configs:
+    {% for victorops in receiver['victorops_configs'] %}
+    {{ victorops_receiver(victorops['routing_key'], victorops['api_key']) }}
+    {% endfor %}
+    {% endif %}
+{% endfor %}
+

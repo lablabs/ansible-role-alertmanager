@@ -1,0 +1,23 @@
+#- name: Generate debug output  of /tmp/alertmanager_receivers on localhost
+#  local_action: copy content="{{ lookup('template', 'alertmanager_inhibit_rules.j2') }}" dest="/tmp/alertmanager_receivers"
+- name: Install and configure alertmanager
+  include_role:
+    name: cloudalchemy.alertmanager
+  vars:
+    alertmanager_route: "{{ lookup('template', 'alertmanager_route.j2') | from_yaml }}"
+    # alertmanager_child_routes: "{{ alert_manager_routes | from_yaml }}"
+    alertmanager_receivers: "{{ lookup('template', 'alertmanager_receivers.j2') | from_yaml }}"
+    alertmanager_inhibit_rules: "{{ lookup('template', 'alertmanager_inhibit_rules.j2') | from_yaml }}"
+- name: Copy custom templates
+  tags: plays:prometheus:templates
+  become: true
+  copy:
+    src: "{{ item }}"
+    dest: "{{ alertmanager_config_dir|default('/etc/alertmanager') }}/templates/"
+    owner: alertmanager
+    group: alertmanager
+    mode: 0640
+  with_fileglob:
+    - "files/templates/*.tmpl"
+  notify:
+    - reload alertmanager

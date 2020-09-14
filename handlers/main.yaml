@@ -1,0 +1,5 @@
+- name: reload alertmanager
+  become: true
+  systemd:
+    name: alertmanager
+    state: reloaded

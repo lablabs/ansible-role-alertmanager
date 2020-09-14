@@ -1,0 +1,8 @@
+#jinja2:lstrip_blocks: True
+  - receiver: 'test'
+    match:
+      alertmanager_test_route: true
+
+  - receiver: 'notice'
+    match:
+      severity: 'warning'

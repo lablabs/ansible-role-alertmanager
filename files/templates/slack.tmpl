@@ -1,0 +1,32 @@
+{{ define "slack.username" }}AlertManager{{ end }}
+
+{{ define "slack.color" }}{{ if eq .Status "firing" }}danger{{ else }}good{{ end }}{{ end }}
+
+{{ define "slack.title" }}[{{ if eq .Status "firing" }}PROBLEM{{ else }}RESOLVED{{ end }}]{{ end }}
+
+{{ define "slack.title_link" }}{{ end }}
+
+{{ define "slack.pretext" }}{{ end }}
+
+{{ define "slack.text"}}
+{{ if eq .Status "firing" }}
+Messages: {{ .Alerts.Firing | len }}
+
+{{ range .Alerts.Firing }}
+{{ .Labels.severity | toUpper }}: *{{ .Labels.alertname }}* on *{{ .Annotations.identifier}}*
+Msg: _{{ .Annotations.msg }}_
+{{ if .Annotations.value }}Value: _{{ .Annotations.value }}_{{ end }}
+{{ if .Annotations.dashboard }}Dashboard: {{ .Labels.grafana_url }}{{ .Annotations.dashboard }} {{ end }}
+{{ end }}
+{{ else if .Alerts.Resolved }}
+Messages: {{ .Alerts.Resolved | len }}
+
+{{ range .Alerts.Resolved }}
+{{ .Labels.severity | toUpper }}: *{{ .Labels.alertname }}* on *{{ .Annotations.identifier}}*
+Msg: _{{ .Annotations.msg }}_
+StartAt: _{{ .StartsAt }}_
+{{ if .Annotations.value }}Value: _{{ .Annotations.value }}_{{ end }}
+{{ if .Annotations.dashboard }}Dashboard: {{ .Labels.grafana_url }}{{ .Annotations.dashboard }} {{ end }}
+{{ end }}
+{{ end }}
+{{ end }}
