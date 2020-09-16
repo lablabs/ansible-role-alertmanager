@@ -1,7 +1,7 @@
 #- name: Generate debug output  of /tmp/alertmanager_receivers on localhost
 #  local_action: copy content="{{ lookup('template', 'alertmanager_inhibit_rules.j2') }}" dest="/tmp/alertmanager_receivers"
 - name: Install and configure alertmanager
-  include_role:
+  import_role:
     name: cloudalchemy.alertmanager
   vars:
     alertmanager_route: "{{ lookup('template', 'alertmanager_route.j2') | from_yaml }}"
