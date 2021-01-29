@@ -22,6 +22,12 @@
         state_message: {% raw %}'{{ range .Alerts.Firing }}{{ .Annotations.msg }}{{ end }}'{% endraw %}
 {% endmacro %}
 
+{% macro pagerduty_receiver(service_key ) %}
+      - service_key: {{ service_key }}
+        send_resolved: false
+{% endmacro %}
+
+
 {% for receiver in alert_manager_receivers %}
   - name: {{ receiver['name'] }}
   {% if receiver['slack_configs'] is defined %}
@@ -34,6 +40,12 @@
     victorops_configs:
     {% for victorops in receiver['victorops_configs'] %}
     {{ victorops_receiver(victorops['routing_key'], victorops['api_key']) }}
+    {% endfor %}
+    {% endif %}
+    {% if receiver['pagerduty_configs'] is defined %}
+    pagerduty_configs:
+    {% for pagerduty in receiver['pagerduty_configs'] %}
+    {{ pagerduty_receiver(pagerduty['service_key'])}}
     {% endfor %}
     {% endif %}
 {% endfor %}
